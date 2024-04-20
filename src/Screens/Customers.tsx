@@ -16,6 +16,14 @@ const Customers: React.FC = () => {
       setPeople(response.data);
     })();
   }, []);
+
+  useEffect(() => {
+    const urldata = new URLSearchParams(window.location.search);
+    const updateid = urldata.get("updateid");
+    if (updateid) {
+      setFormIsVisible(true);
+    }
+  }, []);
   return (
     <div style={{ minHeight: "100vh" }}>
       <header className="p-2 bg-white d-flex align-items-center">
@@ -30,7 +38,6 @@ const Customers: React.FC = () => {
                 Home
               </a>
             </li>
-            <li className="nav-item pb-1 text-dark fw-medium">Contact</li>
           </ul>
         </nav>
       </header>

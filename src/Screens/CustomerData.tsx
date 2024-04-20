@@ -34,7 +34,6 @@ const CustomerData: React.FC = () => {
                 Home
               </a>
             </li>
-            <li className="nav-item pb-1 text-dark fw-medium">Contact</li>
           </ul>
         </nav>
       </header>

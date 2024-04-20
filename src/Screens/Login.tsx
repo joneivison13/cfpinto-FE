@@ -1,15 +1,44 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import { Container, Form, Button } from "react-bootstrap";
 
 import EmailImage from "../assets/img/email.png";
 import LockImage from "../assets/img/lock.png";
 import Input from "../components/Form/Input";
+import API from "../services/api";
+import Cache from "../services/cache";
+import { ToastContainer, toast } from "react-toastify";
 
 export default function Login() {
+  const [email, setemail] = useState("");
+  const [password, setpassword] = useState("");
+  const api = new API();
+
+  const login = useCallback(() => {
+    (async () => {
+      try {
+        const response = await api.login({ email, password });
+
+        if (response.status === 200) {
+          const { data } = response;
+
+          Cache.set("assignature", JSON.stringify({ email, password }));
+
+          window.location.href = "/home";
+        } else {
+          toast.error("Usuário ou senha inválidos");
+        }
+      } catch (error) {
+        toast.error("Usuário ou senha inválidos");
+        console.error(error);
+      }
+    })();
+  }, [email, password]);
+
   return (
     <main
       style={{ backgroundColor: "#E9ECEF", width: "100vw", height: "100vh" }}
     >
+      <ToastContainer />
       <Container
         className="d-flex align-items-center justify-content-between"
         style={{ height: "100vh" }}
@@ -30,32 +59,16 @@ export default function Login() {
             >
               Faça login para iniciar sua sessão
             </p>
-            {/* <div className="mb-3 col-12">
-              <div className="input-group">
-                <input
-                  type="email"
-                  className="form-control border-end-0"
-                  placeholder="Email"
-                />
-                <div className="input-group-prepend">
-                  <span
-                    style={{ height: 38 }}
-                    className="input-group-text border-start-0 bg-white rounded-start-0"
-                    id="inputGroupPrepend3"
-                  >
-                    <img src={EmailImage} alt="Email" style={{ width: 16 }} />
-                  </span>
-                </div>
-              </div>
-            </div> */}
             <Input
               image={EmailImage}
-              placeholder="Email"
+              placeholder="Usuário"
               style={{
                 container: "mb-3 col-12",
                 input: "",
               }}
-              type="email"
+              type="text"
+              onChange={(e) => setemail(e.target.value)}
+              value={email}
             />
             <Input
               image={LockImage}
@@ -65,26 +78,9 @@ export default function Login() {
                 input: "",
               }}
               type="password"
+              onChange={(e) => setpassword(e.target.value)}
+              value={password}
             />
-
-            {/* <div className="mb-3 col-12 mt-4">
-              <div className="input-group">
-                <input
-                  type="password"
-                  className="form-control border-end-0"
-                  placeholder="Password"
-                />
-                <div className="input-group-prepend">
-                  <span
-                    style={{ height: 38 }}
-                    className="input-group-text border-start-0 bg-white rounded-start-0"
-                    id="inputGroupPrepend3"
-                  >
-                    <img src={LockImage} alt="Email" style={{ width: 16 }} />
-                  </span>
-                </div>
-              </div>
-            </div> */}
 
             <div className="d-flex justify-content-between align-items-center">
               <Form.Group controlId="formBasicCheckbox">
@@ -95,9 +91,13 @@ export default function Login() {
                 />
               </Form.Group>
 
-              <a type="submit" className="col-4 btn btn-primary" href="/home">
+              <button
+                type="button"
+                className="col-4 btn btn-primary"
+                onClick={login}
+              >
                 Sign In
-              </a>
+              </button>
             </div>
 
             <div className="mt-3">

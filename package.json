@@ -13,6 +13,8 @@
     "@types/react-dom": "^18.2.23",
     "axios": "^1.6.8",
     "bootstrap": "^5.3.3",
+    "dotenv": "16.4.5",
+    "path-browserify": "^1.0.1",
     "react": "^18.2.0",
     "react-bootstrap": "^2.10.2",
     "react-dom": "^18.2.0",
@@ -47,5 +49,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
   }
 }

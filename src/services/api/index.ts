@@ -1,8 +1,23 @@
 import axios, { AxiosInstance } from "axios";
+import Cache from "../cache";
 
 export const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL,
 });
+
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  async (error) => {
+    if (error.response?.status === 401) {
+      Cache.remove("assignature");
+      window.location.href = "/";
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 export interface IGetUserResponse {
   id: string;
@@ -83,6 +98,10 @@ export interface IGetUserByIdResponse {
   updatedAt: string;
 }
 
+interface ILoginRequest {
+  email: string;
+  password: string;
+}
 export default class API {
   api: AxiosInstance;
 
@@ -90,12 +109,35 @@ export default class API {
     this.api = api;
   }
 
-  async getUsers() {
-    return this.api.get<IGetUserResponse[]>("/person");
+  private async getCredentials(): Promise<ILoginRequest | null> {
+    const data = JSON.parse((await Cache.get("assignature")) || "{}");
+
+    if (!data) {
+      return null;
+    }
+
+    return JSON.parse(data);
   }
 
+  async getUsers() {
+    return this.api.get<IGetUserResponse[]>("/person", {
+      auth: {
+        password: (await this.getCredentials())?.password as string,
+        username: (await this.getCredentials())?.email as string,
+      },
+    });
+  }
+
+  async login(data: ILoginRequest) {
+    return this.api.post<IIdResponse>("/login", data);
+  }
   async createUser(data: ICreateUserRequest) {
-    return this.api.post<IIdResponse>("/person/create", data);
+    return this.api.post<IIdResponse>("/person/create", data, {
+      auth: {
+        password: (await this.getCredentials())?.password as string,
+        username: (await this.getCredentials())?.email as string,
+      },
+    });
   }
 
   async createDocument(data: ICreateDocumentRequest) {
@@ -110,18 +152,64 @@ export default class API {
       headers: {
         "Content-Type": "multipart/form-data",
       },
+
+      auth: {
+        password: (await this.getCredentials())?.password as string,
+        username: (await this.getCredentials())?.email as string,
+      },
     });
   }
 
   async createAddress(data: ICreateAddressRequest) {
-    return this.api.post<IIdResponse>("/address/create", {
-      ...data,
-      person: data.person.replaceAll('"', ""),
-    } as ICreateAddressRequest);
+    return this.api.post<IIdResponse>(
+      "/address/create",
+      {
+        ...data,
+        person: data.person.replaceAll('"', ""),
+      } as ICreateAddressRequest,
+      {
+        auth: {
+          password: (await this.getCredentials())?.password as string,
+          username: (await this.getCredentials())?.email as string,
+        },
+      }
+    );
   }
 
   async getUserById(id: string) {
-    return this.api.get<IGetUserByIdResponse>(`/person/${id}`);
+    return this.api.get<IGetUserByIdResponse>(`/person/${id}`, {
+      auth: {
+        password: (await this.getCredentials())?.password as string,
+        username: (await this.getCredentials())?.email as string,
+      },
+    });
+  }
+
+  async deleteAddress(id: string) {
+    return this.api.delete(`/address/${id}`, {
+      auth: {
+        password: (await this.getCredentials())?.password as string,
+        username: (await this.getCredentials())?.email as string,
+      },
+    });
+  }
+
+  async deleteDocument(id: string) {
+    return this.api.delete(`/document/${id}`, {
+      auth: {
+        password: (await this.getCredentials())?.password as string,
+        username: (await this.getCredentials())?.email as string,
+      },
+    });
+  }
+
+  async deleteUser(id: string) {
+    return this.api.delete(`/person/${id}`, {
+      auth: {
+        password: (await this.getCredentials())?.password as string,
+        username: (await this.getCredentials())?.email as string,
+      },
+    });
   }
 
   getImageUrl(image: string) {
