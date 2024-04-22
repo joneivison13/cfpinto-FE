@@ -6,6 +6,8 @@ import CustomerRegister from "../components/CustomerRegister";
 import API, { IGetUserResponse } from "../services/api";
 
 import EyeImage from "../assets/img/olho.png";
+import useAuth from "../hooks/auth";
+import Cache from "../services/cache";
 
 const Customers: React.FC = () => {
   const [formIsVisible, setFormIsVisible] = useState(false);
@@ -14,9 +16,15 @@ const Customers: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      const api = new API();
-      const response = await api.getUsers();
-      setPeople(response.data);
+      const token = await Cache.get("assignature");
+      console.log({ token });
+      if (!token) {
+        window.location.href = "/";
+      } else {
+        const api = new API();
+        const response = await api.getUsers();
+        setPeople(response.data);
+      }
     })();
   }, []);
 

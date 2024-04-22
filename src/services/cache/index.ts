@@ -5,7 +5,7 @@ export default class Cache {
   }
 
   public static async get(key: string) {
-    return sessionStorage.getItem(key);
+    return sessionStorage.getItem(key) || null;
   }
 
   public static async remove(key: string) {

@@ -4,6 +4,8 @@ import MenuImage from "../assets/img/menu.png";
 import API, { IGetUserByIdResponse } from "../services/api";
 import DrawImage from "../assets/img/draw.png";
 import CloseImage from "../assets/img/close.png";
+import useAuth from "../hooks/auth";
+import Cache from "../services/cache";
 
 const CustomerData: React.FC = () => {
   const [data, setData] = useState<IGetUserByIdResponse>();
@@ -12,6 +14,11 @@ const CustomerData: React.FC = () => {
 
   useEffect(() => {
     (async () => {
+      const token = await Cache.get("assignature");
+      console.log({ token });
+      if (!token) {
+        window.location.href = "/";
+      }
       const search_data = new URLSearchParams(window.location.search);
       const id = search_data.get("id");
 
