@@ -135,7 +135,7 @@ const CustomerRegister: React.FC<{
       setAddresses(
         user_addresses.length > 0
           ? user_addresses.map((i: any) => ({ ...i, isnew: false }))
-          : [{ address: "", city: "", state: "" }]
+          : [{ address: "", city: "", state: "", isnew: true }]
       );
     }
   }, [context.updateUserData]);
@@ -144,106 +144,146 @@ const CustomerRegister: React.FC<{
     (e: any) => {
       (async () => {
         e.preventDefault();
-        try {
-          const api = new API();
-
-          const response = await api.createUser({
-            name,
-            nacionality,
-            document,
-            birthDate,
-            gender,
-            phone,
-            telephone,
-          });
-
-          toast.success("Pessoa criada com sucesso");
-          setErrors({});
-          viewData(false);
-          window.location.href = "/home?updateid=" + response.data.id;
-        } catch (error) {
-          if (error instanceof AxiosError) {
-            console.log(error.response?.data);
-            let erros_formated: any = {};
-            error.response?.data.error.map((error: any) => {
-              erros_formated[error.path] = error.message;
+        const api = new API();
+        if (isupdate) {
+          try {
+            const response = await api.updateUser(updateuid, {
+              name,
+              nacionality,
+              document,
+              birthDate,
+              gender,
+              phone,
+              telephone,
             });
-            setErrors(erros_formated);
-            return toast.error(error.response?.data.message);
+            toast.success("Pessoa criada com sucesso");
+            setErrors({});
+          } catch (error) {
+            if (error instanceof AxiosError) {
+              console.log(error.response?.data);
+              let erros_formated: any = {};
+              error.response?.data.error.map((error: any) => {
+                erros_formated[error.path] = error.message;
+              });
+              setErrors(erros_formated);
+              return toast.error(error.response?.data.message);
+            }
+            if (error instanceof Error) {
+              toast.error(error.message);
+            }
           }
-          if (error instanceof Error) {
-            toast.error(error.message);
+        } else {
+          try {
+            const response = await api.createUser({
+              name,
+              nacionality,
+              document,
+              birthDate,
+              gender,
+              phone,
+              telephone,
+            });
+
+            toast.success("Pessoa criada com sucesso");
+            setErrors({});
+            window.location.href = "/home?updateid=" + response.data.id;
+          } catch (error) {
+            if (error instanceof AxiosError) {
+              console.log(error.response?.data);
+              let erros_formated: any = {};
+              error.response?.data.error.map((error: any) => {
+                erros_formated[error.path] = error.message;
+              });
+              setErrors(erros_formated);
+              return toast.error(error.response?.data.message);
+            }
+            if (error instanceof Error) {
+              toast.error(error.message);
+            }
           }
         }
       })();
     },
-    [birthDate, document, gender, nacionality, name, phone, telephone, viewData]
+    [name, nacionality, document, birthDate, gender, phone, telephone]
   );
 
   const createDocument = useCallback(() => {
     (async () => {
       const api = new API();
       const person = isupdate ? updateuid : await Cache.get("person");
+      console.log({ documents, person, updateuid });
       if (!person) {
         return toast.error("Pessoa não encontrada");
       }
 
-      console.log({ documents });
+      for (const document of documents) {
+        if (document.isnew) {
+          await api.createDocument({
+            type: document.documentType,
+            value: document.documentValue,
+            person,
+            file: document.documentFile,
+          });
+        }
+      }
 
-      // documents
-      //   .filter((doc) => doc.isnew)
-      //   .map(async (document) => {
-      //     api
-      //       .createDocument({
-      //         type: document.documentType,
-      //         value: document.documentValue,
-      //         person,
-      //         file: document.documentFile,
-      //       })
-      //       .then((response) => {
-      //         toast.success("Documento criado com sucesso");
-      //         setErrors({});
-      //       })
-      //       .catch((error) => {
-      //         if (error instanceof AxiosError) {
-      //           console.log(error.response?.data);
-      //           let erros_formated: any = {};
-      //           error.response?.data.error.map((error: any) => {
-      //             erros_formated[error.path] = error.message;
-      //           });
-      //           setErrors(erros_formated);
-      //           return toast.error(error.response?.data.message);
-      //         }
-      //         if (error instanceof Error) {
-      //           toast.error(error.message);
-      //         }
-      //       });
-      //   });
+      toast.success("Documento criado com sucesso");
+      setErrors({});
+      setDocuments((documents) =>
+        documents.map((document) => ({ ...document, isnew: false }))
+      );
     })();
-  }, [documentFile, documentType, documentValue]);
+  }, [documents, isupdate, updateuid]);
 
   const createAddress = useCallback(() => {
     (async () => {
       const api = new API();
-      const person = await Cache.get("person");
+      const person = isupdate ? updateuid : await Cache.get("person");
+
+      console.log({ addresses, person, aaa: addresses[0].isnew });
       if (!person) {
         return toast.error("Pessoa não encontrada");
       }
 
-      addresses
-        .filter((address) => address.isnew)
-        .map(async (address) => {
+      for (const address of addresses) {
+        if (address.isnew) {
           await api.createAddress({
             street: address.address,
             city: address.city,
             state: address.state,
             person: person,
           });
-        });
+        }
+      }
 
       toast.success("Endereço criado com sucesso");
+      setAddresses((addresses) =>
+        addresses.map((address) => ({ ...address, isnew: false }))
+      );
     })();
-  }, [addresses]);
+  }, [addresses, isupdate, updateuid]);
+
+  const hasUpdateTab = () => {
+    const formdata = [
+      name,
+      nacionality,
+      document,
+      birthDate,
+      gender,
+      phone,
+      telephone,
+      documents,
+      documentType,
+      documentValue,
+      addresses,
+    ];
+
+    if (formdata.some((data) => data !== "") && isupdate === false) {
+      return true;
+    } else {
+      return false;
+    }
+  };
 
   return (
     <div className="p-4 pt-0">
@@ -252,7 +292,13 @@ const CustomerRegister: React.FC<{
         <li
           className="nav-item"
           style={{ cursor: "pointer" }}
-          onClick={() => setSelected("peoples")}
+          onClick={() => {
+            if (!hasUpdateTab()) {
+              setSelected("peoples");
+            } else {
+              toast.info("Você tem dados não salvos");
+            }
+          }}
         >
           <p
             className={`nav-link ${selected === "peoples" ? "active" : ""}`}
@@ -264,7 +310,13 @@ const CustomerRegister: React.FC<{
         <li
           className="nav-item"
           style={{ cursor: "pointer" }}
-          onClick={() => setSelected("documents")}
+          onClick={() => {
+            if (!hasUpdateTab()) {
+              setSelected("documents");
+            } else {
+              toast.info("Você tem dados não salvos");
+            }
+          }}
         >
           <p className={`nav-link ${selected === "documents" ? "active" : ""}`}>
             Documents
@@ -273,7 +325,13 @@ const CustomerRegister: React.FC<{
         <li
           className="nav-item"
           style={{ cursor: "pointer" }}
-          onClick={() => setSelected("address")}
+          onClick={() => {
+            if (!hasUpdateTab()) {
+              setSelected("address");
+            } else {
+              toast.info("Você tem dados não salvos");
+            }
+          }}
         >
           <p className={`nav-link ${selected === "address" ? "active" : ""}`}>
             Endereços
@@ -438,7 +496,7 @@ const CustomerRegister: React.FC<{
                     setDocuments(newDocuments);
                   }}
                   value={document.documentType}
-                  disabled={document.isnew}
+                  disabled={!document.isnew}
                 />
                 <Input
                   image={undefined}
@@ -456,7 +514,7 @@ const CustomerRegister: React.FC<{
                     setDocuments(newDocuments);
                   }}
                   value={document.documentValue}
-                  disabled={document.isnew}
+                  disabled={!document.isnew}
                 />
                 <Input
                   image={undefined}
@@ -476,7 +534,7 @@ const CustomerRegister: React.FC<{
                     }
                   }}
                   accept="image/*"
-                  disabled={document.isnew}
+                  disabled={!document.isnew}
                 />
               </div>
             </div>
@@ -549,7 +607,7 @@ const CustomerRegister: React.FC<{
                     setAddresses(newAddresses);
                   }}
                   value={address.address}
-                  disabled={address.isnew}
+                  disabled={!address.isnew}
                 />
                 <Input
                   image={undefined}
@@ -568,7 +626,7 @@ const CustomerRegister: React.FC<{
                     setAddresses(newAddresses);
                   }}
                   value={address.city}
-                  disabled={address.isnew}
+                  disabled={!address.isnew}
                 />
                 <Input
                   image={undefined}
@@ -587,7 +645,7 @@ const CustomerRegister: React.FC<{
                     setAddresses(newAddresses);
                   }}
                   value={address.state}
-                  disabled={address.isnew}
+                  disabled={!address.isnew}
                 />
               </div>
             </div>
@@ -599,7 +657,7 @@ const CustomerRegister: React.FC<{
               onClick={() => {
                 setAddresses([
                   ...addresses,
-                  { address: "", city: "", state: "" },
+                  { address: "", city: "", state: "", isnew: true },
                 ]);
               }}
             >

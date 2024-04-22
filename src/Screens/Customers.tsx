@@ -5,9 +5,12 @@ import Table from "../components/Table";
 import CustomerRegister from "../components/CustomerRegister";
 import API, { IGetUserResponse } from "../services/api";
 
+import EyeImage from "../assets/img/olho.png";
+
 const Customers: React.FC = () => {
   const [formIsVisible, setFormIsVisible] = useState(false);
   const [people, setPeople] = useState<IGetUserResponse[]>([]);
+  const [uid, setUid] = useState<null | string>(null);
 
   useEffect(() => {
     (async () => {
@@ -22,6 +25,14 @@ const Customers: React.FC = () => {
     const updateid = urldata.get("updateid");
     if (updateid) {
       setFormIsVisible(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    const urldata = new URLSearchParams(window.location.search);
+    const uid = urldata.get("updateid");
+    if (uid) {
+      setUid(uid);
     }
   }, []);
   return (
@@ -47,8 +58,16 @@ const Customers: React.FC = () => {
         <h1 className="fs-3 fw-medium mb-4">Clientes</h1>
         <div className="shadow-sm bg-white" style={{ width: "100%" }}>
           <div className="d-flex align-items-baseline justify-content-between pe-4 ps-4 pt-2 pb-2">
-            <p className="fs-5 fw-medium">
+            <p
+              className="fs-5 fw-medium"
+              style={{ display: "flex", alignItems: "center" }}
+            >
               {!formIsVisible ? "Clientes" : "Cadastro de clientes"}
+              {uid && (
+                <a className="btn" href={"/customer?id=" + uid}>
+                  <img src={EyeImage} alt="" style={{ width: 20 }} />
+                </a>
+              )}
             </p>
             {!formIsVisible && (
               <button

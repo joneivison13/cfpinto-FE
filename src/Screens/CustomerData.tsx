@@ -2,9 +2,12 @@ import React, { useEffect, useState } from "react";
 
 import MenuImage from "../assets/img/menu.png";
 import API, { IGetUserByIdResponse } from "../services/api";
+import DrawImage from "../assets/img/draw.png";
+import CloseImage from "../assets/img/close.png";
 
 const CustomerData: React.FC = () => {
   const [data, setData] = useState<IGetUserByIdResponse>();
+  const [uid, setUid] = useState<null | string>(null);
   const api = new API();
 
   useEffect(() => {
@@ -17,6 +20,7 @@ const CustomerData: React.FC = () => {
       } else {
         const userdata = await api.getUserById(id);
         setData(userdata.data);
+        setUid(id);
       }
     })();
   }, []);
@@ -46,7 +50,18 @@ const CustomerData: React.FC = () => {
             <p className="fs-5 fw-medium">Detalhes do cliente</p>
           </div>
           <div className="ps-4 pe-4 border border-top-black">
-            <p className="fs-4 fw-medium mb-2">Informações do cliente:</p>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginBottom: 15,
+              }}
+            >
+              <p className="fs-4 fw-medium mb-0">Informações do cliente:</p>
+              <a className="btn pt-0 pb-0" href={"/home?updateid=" + uid}>
+                <img src={DrawImage} style={{ width: 20 }} />
+              </a>
+            </div>
             <ul className="ms-3">
               <li>
                 <p className="mb-0">
@@ -123,11 +138,14 @@ const CustomerData: React.FC = () => {
                 data?.Document.map((document, indx) => (
                   <div key={indx} className={indx.toString()}>
                     {document.file && (
-                      <img
-                        src={api.getImageUrl(document.file)}
-                        alt=""
-                        style={{ width: 350 }}
-                      />
+                      <div style={{ display: "flex", flexDirection: "column" }}>
+                        <span className="fw-bold">{document.type}</span>
+                        <img
+                          src={api.getImageUrl(document.file)}
+                          alt=""
+                          style={{ width: 350 }}
+                        />
+                      </div>
                     )}
                   </div>
                 ))}

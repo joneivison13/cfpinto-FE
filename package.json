@@ -23,7 +23,8 @@
     "react-toastify": "^10.0.5",
     "serve": "^14.2.1",
     "typescript": "^4.9.5",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "winston": "^3.13.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -51,6 +52,7 @@
     ]
   },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@types/winston": "^2.4.4"
   }
 }

@@ -87,6 +87,7 @@ export interface IGetUserByIdResponse {
     id: string;
     file: null;
     value: string;
+    type: string;
   }[];
   document: string;
   gender: string;
@@ -140,10 +141,19 @@ export default class API {
     });
   }
 
+  async updateUser(id: string, data: ICreateUserRequest) {
+    return this.api.put<IIdResponse>(`/person/${id}`, data, {
+      auth: {
+        password: (await this.getCredentials())?.password as string,
+        username: (await this.getCredentials())?.email as string,
+      },
+    });
+  }
+
   async createDocument(data: ICreateDocumentRequest) {
     const formData = new FormData();
     console.log({ data });
-    formData.append("type", data.type);
+    formData.append("type", data.type.toUpperCase());
     formData.append("value", data.value);
     formData.append("person", data.person.replaceAll('"', ""));
     formData.append("file", data.file);

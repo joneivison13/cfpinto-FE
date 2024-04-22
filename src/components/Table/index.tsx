@@ -88,11 +88,11 @@ const Table: React.FC<TableProps> = ({ content, title }) => {
               );
             })}
             <td className="col-1" style={{}}>
-              <a className="btn" href={"/home?updateid=" + c.id}>
+              <a className="btn pt-0 pb-0" href={"/home?updateid=" + c.id}>
                 <img src={DrawImage} style={{ width: 20 }} />
               </a>
               <button
-                className="btn"
+                className="btn pt-0 pb-0"
                 style={{ zIndex: 10 }}
                 onClick={async () => {
                   const api = new API();
