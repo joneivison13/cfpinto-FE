@@ -51,6 +51,15 @@ export interface ICreateUserRequest {
   gender: string;
   phone: string;
   telephone: string;
+  email: string;
+  civil_state: string;
+  father_name: string;
+  mother_name: string;
+  profession: string;
+  is_client: boolean;
+  natural_city: string;
+  natural_country: string;
+  natural_state: string;
 }
 
 export interface ICreateDocumentRequest {
@@ -103,6 +112,16 @@ interface ILoginRequest {
   email: string;
   password: string;
 }
+
+interface ICreateFile {
+  type: string;
+  usersid: string[];
+}
+
+export interface IDocumentTypes {
+  id: string;
+  name: string;
+}
 export default class API {
   api: AxiosInstance;
 
@@ -118,6 +137,24 @@ export default class API {
     }
 
     return JSON.parse(data);
+  }
+
+  async createFile(data: ICreateFile) {
+    return this.api.post("/file/create", data, {
+      auth: {
+        password: (await this.getCredentials())?.password as string,
+        username: (await this.getCredentials())?.email as string,
+      },
+    });
+  }
+
+  async getDocumentTypes() {
+    return this.api.get<{ data: IDocumentTypes[] }>("/document/type", {
+      auth: {
+        password: (await this.getCredentials())?.password as string,
+        username: (await this.getCredentials())?.email as string,
+      },
+    });
   }
 
   async getUsers() {

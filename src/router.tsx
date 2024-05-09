@@ -7,6 +7,7 @@ import Login from "./Screens/Login";
 import Register from "./Screens/Register";
 import Customers from "./Screens/Customers";
 import CustomerData from "./Screens/CustomerData";
+import Reports from "./Screens/Reports";
 
 const router = createBrowserRouter([
   {
@@ -24,6 +25,10 @@ const router = createBrowserRouter([
   {
     path: "/customer",
     element: <CustomerData />,
+  },
+  {
+    path: "/report/:type",
+    element: <Reports />,
   },
   {
     path: "*",
